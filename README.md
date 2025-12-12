@@ -299,6 +299,10 @@ npm run lint
 - **Discussions**: [GitHub Discussions](https://github.com/XposedOrNot/XposedOrNot-JS/discussions)
 - **API Status**: [XposedOrNot Status](https://xposedornot.com)
 
+## Show Your Support
+
+If you find this package useful, give it a ⭐ on [GitHub](https://github.com/XposedOrNot/XposedOrNot-JS)!
+
 ## License
 
 MIT - see the [LICENSE](LICENSE) file for details.
