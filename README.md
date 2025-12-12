@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/xposedornot"><img src="https://img.shields.io/npm/v/xposedornot.svg" alt="npm version"></a>
-  <a href="https://github.com/XposedOrNot/XposedOrNot-JS/actions"><img src="https://img.shields.io/github/actions/workflow/status/XposedOrNot/XposedOrNot-JS/ci.yml?branch=main" alt="Build Status"></a>
+  <a href="https://github.com/XposedOrNot/XposedOrNot-JS/actions"><img src="https://img.shields.io/github/actions/workflow/status/XposedOrNot/XposedOrNot-JS/build.yml?branch=main" alt="Build Status"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/xposedornot.svg" alt="Node.js Version"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0-blue.svg" alt="TypeScript"></a>
