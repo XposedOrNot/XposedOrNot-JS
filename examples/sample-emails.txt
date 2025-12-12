@@ -1,0 +1,4 @@
+# Sample emails to check (lines starting with # are ignored)
+test@example.co
+admin@test.com
+random12345xyz@gmail.com
