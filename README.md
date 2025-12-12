@@ -17,7 +17,6 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/xposedornot.svg" alt="Node.js Version"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0-blue.svg" alt="TypeScript"></a>
-  <a href="https://github.com/XposedOrNot/XposedOrNot-JS/graphs/contributors"><img src="https://img.shields.io/github/contributors/XposedOrNot/XposedOrNot-JS" alt="Contributors"></a>
 </p>
 
 ---
@@ -299,16 +298,6 @@ npm run lint
 - **Issues**: [GitHub Issues](https://github.com/XposedOrNot/XposedOrNot-JS/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/XposedOrNot/XposedOrNot-JS/discussions)
 - **API Status**: [XposedOrNot Status](https://xposedornot.com)
-
-## Contributors
-
-<!-- ALL-CONTRIBUTORS-LIST:START -->
-Thanks to these wonderful people:
-
-<!-- Add contributors here -->
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-Contributions of any kind are welcome! See [Contributing](#contributing) for details.
 
 ## License
 
