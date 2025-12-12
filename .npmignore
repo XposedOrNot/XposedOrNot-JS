@@ -4,7 +4,7 @@ tsconfig.json
 tsup.config.ts
 
 # Tests & Examples
-tests/
+test/
 examples/
 *.test.ts
 *.spec.ts
@@ -12,9 +12,13 @@ coverage/
 vitest.config.ts
 
 # Dev configs
-.eslintrc*
+eslint.config.js
 .prettierrc*
+.prettierignore
 .editorconfig
+
+# CI/CD
+.github/
 
 # IDE
 .idea/
@@ -28,3 +32,4 @@ vitest.config.ts
 # Misc
 *.log
 .DS_Store
+package-lock.json
