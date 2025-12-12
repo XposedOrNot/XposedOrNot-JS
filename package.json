@@ -47,7 +47,7 @@
     "email-security",
     "pwned"
   ],
-  "author": "deva@xposedornot.com",
+  "author": "XposedOrNot <deva@xposedornot.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
