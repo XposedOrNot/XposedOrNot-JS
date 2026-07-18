@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { validateEmail, validateDomain, normalizeEmail } from '../src/utils/validation.js';
+import {
+  validateEmail,
+  validateDomain,
+  validatePassword,
+  normalizeEmail,
+} from '../src/utils/validation.js';
 import { ValidationError } from '../src/errors/index.js';
 
 describe('validateEmail', () => {
@@ -24,6 +29,24 @@ describe('validateEmail', () => {
     expect(() => validateEmail('notanemail')).toThrow(ValidationError);
     expect(() => validateEmail('missing@domain')).toThrow(ValidationError);
     expect(() => validateEmail('@nodomain.com')).toThrow(ValidationError);
+  });
+
+  it('rejects consecutive dots and numeric TLDs', () => {
+    expect(() => validateEmail('user..name@example.com')).toThrow(ValidationError);
+    expect(() => validateEmail('user@example..com')).toThrow(ValidationError);
+    expect(() => validateEmail('user@example.123')).toThrow(ValidationError);
+  });
+});
+
+describe('validatePassword', () => {
+  it('accepts non-empty strings', () => {
+    expect(() => validatePassword('hunter2')).not.toThrow();
+  });
+
+  it('rejects empty or non-string input', () => {
+    expect(() => validatePassword('')).toThrow(ValidationError);
+    expect(() => validatePassword(null)).toThrow(ValidationError);
+    expect(() => validatePassword(42)).toThrow(ValidationError);
   });
 });
 

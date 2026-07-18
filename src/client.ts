@@ -6,6 +6,8 @@ import type {
   CheckEmailOptions,
   CheckEmailResult,
   GetBreachAnalyticsOptions,
+  PasswordCheckResult,
+  DomainBreachesResult,
 } from './types/index.js';
 import { DEFAULT_CONFIG } from './types/config.js';
 import { HttpClient } from './utils/http.js';
@@ -13,6 +15,8 @@ import { ValidationError } from './errors/index.js';
 import { getBreaches } from './endpoints/breaches.js';
 import { checkEmail } from './endpoints/check-email.js';
 import { getBreachAnalytics, type BreachAnalyticsResult } from './endpoints/breach-analytics.js';
+import { checkPassword } from './endpoints/password.js';
+import { getDomainBreaches } from './endpoints/domain-breaches.js';
 
 /**
  * XposedOrNot API client
@@ -52,6 +56,8 @@ export class XposedOrNot {
    * Merge user config with defaults and validate
    */
   private resolveConfig(config: XposedOrNotConfig): ResolvedConfig {
+    this.validateApiKey(config.apiKey);
+
     // Validate and resolve baseUrl
     const baseUrl = config.baseUrl ?? DEFAULT_CONFIG.baseUrl;
     this.validateBaseUrl(baseUrl);
@@ -65,6 +71,7 @@ export class XposedOrNot {
     this.validateRetries(retries);
 
     return {
+      apiKey: config.apiKey,
       baseUrl,
       timeout,
       retries,
@@ -73,6 +80,19 @@ export class XposedOrNot {
         ...config.headers,
       },
     };
+  }
+
+  /**
+   * Validate apiKey - must be a non-empty string when provided
+   */
+  private validateApiKey(apiKey: string | undefined): void {
+    if (apiKey === undefined) {
+      return;
+    }
+
+    if (typeof apiKey !== 'string' || !apiKey.trim()) {
+      throw new ValidationError('Invalid apiKey: must be a non-empty string', 'apiKey');
+    }
   }
 
   /**
@@ -210,5 +230,54 @@ export class XposedOrNot {
     options?: GetBreachAnalyticsOptions
   ): Promise<BreachAnalyticsResult> {
     return getBreachAnalytics(this.http, email, options);
+  }
+
+  /**
+   * Check if a password has been exposed in data breaches
+   *
+   * SECURITY: Your password is NEVER sent over the network.
+   * This method uses k-anonymity protection:
+   * 1. The password is hashed locally using Keccak-512
+   * 2. Only the first 10 characters of the hash are sent to the API
+   * 3. The API returns matches for that hash prefix
+   * 4. Your actual password never leaves your machine
+   *
+   * @param password - The password to check (hashed locally, never transmitted)
+   * @returns Result with exposure count and password characteristics
+   *
+   * @example
+   * ```typescript
+   * const result = await xon.checkPassword('hunter2');
+   *
+   * if (result.found) {
+   *   console.log(`Exposed ${result.count} times - do not use this password!`);
+   * } else {
+   *   console.log('Password not found in known breaches.');
+   * }
+   * ```
+   */
+  async checkPassword(password: string): Promise<PasswordCheckResult> {
+    return checkPassword(this.http, password);
+  }
+
+  /**
+   * Get breach information for domains verified against the API key
+   *
+   * Requires an API key with verified domains configured at
+   * console.xposedornot.com.
+   *
+   * @returns Metrics and exposed email records for the verified domains
+   * @throws {AuthenticationError} If no API key is configured or the key is invalid
+   *
+   * @example
+   * ```typescript
+   * const xon = new XposedOrNot({ apiKey: process.env.XON_API_KEY });
+   * const result = await xon.getDomainBreaches();
+   *
+   * console.log(`Exposed records: ${result.breachesDetails.length}`);
+   * ```
+   */
+  async getDomainBreaches(): Promise<DomainBreachesResult> {
+    return getDomainBreaches(this.http);
   }
 }

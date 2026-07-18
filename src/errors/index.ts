@@ -86,6 +86,16 @@ export class TimeoutError extends XposedOrNotError {
 }
 
 /**
+ * Error thrown when the server encounters an error (5xx)
+ */
+export class ServerError extends XposedOrNotError {
+  constructor(message = 'Server error occurred', statusCode = 500) {
+    super(message, 'SERVER_ERROR', statusCode);
+    this.name = 'ServerError';
+  }
+}
+
+/**
  * Error thrown when the API returns an unexpected response
  */
 export class ApiError extends XposedOrNotError {

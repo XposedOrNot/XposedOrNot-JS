@@ -6,6 +6,7 @@ import {
   NotFoundError,
   NetworkError,
   TimeoutError,
+  ServerError,
   ApiError,
 } from '../src/errors/index.js';
 
@@ -63,6 +64,20 @@ describe('TimeoutError', () => {
   it('has correct properties', () => {
     const error = new TimeoutError();
     expect(error.code).toBe('TIMEOUT');
+  });
+});
+
+describe('ServerError', () => {
+  it('has correct defaults', () => {
+    const error = new ServerError();
+    expect(error.statusCode).toBe(500);
+    expect(error.code).toBe('SERVER_ERROR');
+    expect(error.name).toBe('ServerError');
+  });
+
+  it('accepts a custom status code', () => {
+    const error = new ServerError('Bad gateway', 502);
+    expect(error.statusCode).toBe(502);
   });
 });
 

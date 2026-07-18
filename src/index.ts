@@ -17,6 +17,14 @@ export type {
   CheckEmailResponse,
   CheckEmailFoundResponse,
   CheckEmailNotFoundResponse,
+  CheckEmailDetailedResponse,
+  BreachInfo,
+  PasswordCheckResult,
+  PasswordCheckResponse,
+  PasswordCharacteristics,
+  DomainBreachDetail,
+  DomainBreachesResponse,
+  DomainBreachesResult,
 
   // Analytics types
   BreachAnalyticsResponse,
@@ -44,5 +52,6 @@ export {
   ValidationError,
   NetworkError,
   TimeoutError,
+  ServerError,
   ApiError,
 } from './errors/index.js';

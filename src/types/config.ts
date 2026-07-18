@@ -3,6 +3,15 @@
  */
 export interface XposedOrNotConfig {
   /**
+   * API key from console.xposedornot.com for Plus API access.
+   * When provided, checkEmail() uses the Plus API with detailed breach
+   * information and higher rate limits, and getDomainBreaches() becomes
+   * available. Sent as the `x-api-key` header on every request.
+   * @throws {ValidationError} If not a non-empty string
+   */
+  apiKey?: string;
+
+  /**
    * Base URL for the API (must use HTTPS)
    * @default 'https://api.xposedornot.com'
    * @throws {ValidationError} If not a valid HTTPS URL
@@ -17,7 +26,8 @@ export interface XposedOrNotConfig {
   timeout?: number;
 
   /**
-   * Number of retry attempts for failed requests (0-10)
+   * Number of retries after a failed request (0-10), so a request makes
+   * at most `retries + 1` attempts
    * @default 3
    * @throws {ValidationError} If outside valid range
    */
@@ -33,6 +43,7 @@ export interface XposedOrNotConfig {
  * Internal resolved configuration with all defaults applied
  */
 export interface ResolvedConfig {
+  apiKey?: string;
   baseUrl: string;
   timeout: number;
   retries: number;

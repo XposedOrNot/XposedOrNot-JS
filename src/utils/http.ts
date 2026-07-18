@@ -6,6 +6,7 @@ import {
   AuthenticationError,
   NetworkError,
   TimeoutError,
+  ServerError,
   ApiError,
 } from '../errors/index.js';
 
@@ -14,25 +15,35 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   body?: unknown;
   params?: Record<string, string | boolean | undefined>;
+  /** Override the base URL for this request (e.g., Plus or passwords API) */
+  baseUrl?: string;
 }
+
+/** Minimum spacing between requests on the free API (1 request/second) */
+const RATE_LIMIT_DELAY_MS = 1000;
 
 /**
  * HTTP client for making API requests
  */
 export class HttpClient {
+  private lastRequestTime = 0;
+
   constructor(private readonly config: ResolvedConfig) {}
+
+  /**
+   * Whether an API key is configured (Plus API access)
+   */
+  get hasApiKey(): boolean {
+    return Boolean(this.config.apiKey);
+  }
 
   /**
    * Make an HTTP request to the API
    */
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { method = 'GET', headers = {}, body, params } = options;
+    const { method = 'GET', headers = {}, body, params, baseUrl } = options;
 
-    const url = this.buildUrl(endpoint, params);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, this.config.timeout);
+    const url = this.buildUrl(endpoint, params, baseUrl);
 
     const requestHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -41,11 +52,20 @@ export class HttpClient {
       ...headers,
     };
 
-    let lastError: Error | undefined;
-    let attempt = 0;
+    if (this.config.apiKey) {
+      requestHeaders['x-api-key'] = this.config.apiKey;
+    }
 
-    while (attempt < this.config.retries) {
-      attempt++;
+    let lastError: Error | undefined;
+    const maxAttempts = this.config.retries + 1;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await this.waitForRateLimit();
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, this.config.timeout);
 
       try {
         const response = await fetch(url, {
@@ -55,7 +75,7 @@ export class HttpClient {
           signal: controller.signal,
         });
 
-        clearTimeout(timeoutId);
+        this.lastRequestTime = Date.now();
 
         return await this.handleResponse<T>(response);
       } catch (error) {
@@ -75,10 +95,15 @@ export class HttpClient {
         }
 
         // Wait before retrying (exponential backoff)
-        if (attempt < this.config.retries) {
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+        if (attempt < maxAttempts) {
+          const retryAfter = error instanceof RateLimitError ? error.retryAfter : undefined;
+          const delay = retryAfter
+            ? retryAfter * 1000
+            : Math.min(1000 * Math.pow(2, attempt - 1), 10000);
           await this.sleep(delay);
         }
+      } finally {
+        clearTimeout(timeoutId);
       }
     }
 
@@ -88,9 +113,24 @@ export class HttpClient {
     }
 
     throw new NetworkError(
-      `Request failed after ${this.config.retries} attempts: ${lastError?.message}`,
+      `Request failed after ${maxAttempts} attempts: ${lastError?.message}`,
       lastError
     );
+  }
+
+  /**
+   * Wait if necessary to respect the free API rate limit (1 request/second).
+   * Skipped for Plus API users, whose tier-based limits are enforced server-side.
+   */
+  private async waitForRateLimit(): Promise<void> {
+    if (this.config.apiKey) {
+      return;
+    }
+
+    const elapsed = Date.now() - this.lastRequestTime;
+    if (elapsed < RATE_LIMIT_DELAY_MS) {
+      await this.sleep(RATE_LIMIT_DELAY_MS - elapsed);
+    }
   }
 
   /**
@@ -98,9 +138,10 @@ export class HttpClient {
    */
   private buildUrl(
     endpoint: string,
-    params?: Record<string, string | boolean | undefined>
+    params?: Record<string, string | boolean | undefined>,
+    baseUrl?: string
   ): string {
-    const url = new URL(endpoint, this.config.baseUrl);
+    const url = new URL(endpoint, baseUrl ?? this.config.baseUrl);
 
     if (params) {
       for (const [key, value] of Object.entries(params)) {
@@ -159,6 +200,9 @@ export class HttpClient {
         throw new RateLimitError(message, retryAfter);
       }
       default:
+        if (status >= 500) {
+          throw new ServerError(message || `Server error: ${status}`, status);
+        }
         throw new ApiError(message || `API error: ${status}`, status, data);
     }
   }

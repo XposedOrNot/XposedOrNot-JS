@@ -33,4 +33,15 @@ describe('XposedOrNot client', () => {
     expect(() => new XposedOrNot({ retries: -1 })).toThrow(ValidationError);
     expect(() => new XposedOrNot({ retries: 20 })).toThrow(ValidationError);
   });
+
+  it('accepts a valid apiKey', () => {
+    const client = new XposedOrNot({ apiKey: 'my-api-key' });
+    expect(client).toBeInstanceOf(XposedOrNot);
+  });
+
+  it('rejects an empty or non-string apiKey', () => {
+    expect(() => new XposedOrNot({ apiKey: '' })).toThrow(ValidationError);
+    expect(() => new XposedOrNot({ apiKey: '   ' })).toThrow(ValidationError);
+    expect(() => new XposedOrNot({ apiKey: 123 as unknown as string })).toThrow(ValidationError);
+  });
 });
